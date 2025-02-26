@@ -3,7 +3,7 @@ FROM n8nio/n8n:latest
 USER root
 
 # Install OpenSSH server
-RUN apk update && apk add --no-cache openssh
+RUN apk update && apk add --no-cache openrc openssh
 
 # Generate SSH host keys
 RUN ssh-keygen -A
@@ -12,7 +12,7 @@ RUN ssh-keygen -A
 RUN mkdir -p /run/openrc && touch /run/openrc/softlevel
 
 # Enable SSH service
-RUN rc-update add sshd
+RUN rc-update add sshd default
 
 # Expose SSH port
 EXPOSE 22
@@ -22,4 +22,4 @@ ENTRYPOINT []
 
 COPY ./entrypoint.sh /
 RUN chmod +x /entrypoint.sh
-CMD ["/bin/sh", "-c", "/etc/init.d/sshd start && /entrypoint.sh"]
+CMD ["/bin/sh", "-c", "openrc && /entrypoint.sh"]
