@@ -22,4 +22,4 @@ ENTRYPOINT []
 
 COPY ./entrypoint.sh /
 RUN chmod +x /entrypoint.sh
-CMD ["sh", "-c", "/etc/init.d/sshd start", "/entrypoint.sh"]
+CMD ["/bin/sh", "-c", "/etc/init.d/sshd start && /entrypoint.sh"]
