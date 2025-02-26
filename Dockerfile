@@ -2,24 +2,27 @@ FROM n8nio/n8n:latest
 
 USER root
 
-# Install OpenSSH server
-RUN apk update && apk add --no-cache openrc openssh
+# Install required packages
+RUN apk update && apk add --no-cache bash curl openssh iproute2 python3
 
-# Generate SSH host keys
-RUN ssh-keygen -A
+# Ensure /bin/sh points to /bin/bash
+RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 
-# Create a directory for SSH to run
-RUN mkdir -p /run/openrc && touch /run/openrc/softlevel
+# Create the .profile.d directory
+RUN mkdir -p /app/.profile.d/
 
-# Enable SSH service
-RUN rc-update add sshd default
+# Add the heroku-exec.sh script
+COPY .profile.d/heroku-exec.sh /app/.profile.d/heroku-exec.sh
 
-# Expose SSH port
-EXPOSE 22
+# Make the script executable
+RUN chmod +x /app/.profile.d/heroku-exec.sh
+
+# Expose the SSH port
+EXPOSE 2222
 
 WORKDIR /home/node/packages/cli
 ENTRYPOINT []
 
 COPY ./entrypoint.sh /
 RUN chmod +x /entrypoint.sh
-CMD ["/bin/sh", "-c", "openrc && /entrypoint.sh"]
+CMD ["/bin/bash", "-c", "/usr/sbin/sshd && /entrypoint.sh"]
