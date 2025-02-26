@@ -2,15 +2,24 @@ FROM n8nio/n8n:latest
 
 USER root
 
-RUN apt-get update && apt-get install -y openssh-server
+# Install OpenSSH server
+RUN apk update && apk add --no-cache openssh
 
-RUN curl --fail --retry 3 -sSL https://github.com/heroku/heroku-exec-util/raw/master/heroku-exec.sh -o /app/.profile.d/heroku-exec.sh
+# Generate SSH host keys
+RUN ssh-keygen -A
 
-EXPOSE 5000 2222
+# Create a directory for SSH to run
+RUN mkdir -p /run/openrc && touch /run/openrc/softlevel
+
+# Enable SSH service
+RUN rc-update add sshd
+
+# Expose SSH port
+EXPOSE 22
 
 WORKDIR /home/node/packages/cli
 ENTRYPOINT []
 
 COPY ./entrypoint.sh /
 RUN chmod +x /entrypoint.sh
-CMD ["/entrypoint.sh"]
+CMD ["sh", "-c", "/etc/init.d/sshd start", "/entrypoint.sh"]
